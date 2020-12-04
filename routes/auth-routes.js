@@ -108,7 +108,7 @@ router.get(
   }),
   function (req, res) {
     // Successful authentication, redirect home.
-    res.redirect(`${process.env.CLIENT_HOSTNAME}/`);
+    res.redirect(`${process.env.CLIENT_HOSTNAME}/quiz-creation`);
   }
 );
 
