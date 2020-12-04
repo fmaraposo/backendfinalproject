@@ -8,19 +8,11 @@ const Quiz = require('../models/Quiz');
 
 router.post('/quiz', (req, res) => {
   const questions = req.body.questions;
-  const quizQuestions = [
-    "What's your favourite song?",
-    'What song reminds your summer of 69?',
-  ];
   const quizCode = Math.floor(100000 + Math.random() * 900000);
-  //const ourSongsArray = ['Lady Madonna', 'Eleanor Rigby'];
- // const isFinished = false;
 
   Quiz.create({
     quizCode: quizCode,
     questions: questions,
-   // songs: ourSongsArray,
-  //  isFinished,
   })
     .then((response) => {
       console.log(`This is the quiz we have just added: ${response}`);
@@ -48,12 +40,14 @@ router.put('/quiz/:id/edit', (req, res) => {
   });
 });
 
-module.exports = router;
+//Add array of users to the Quiz Model
+router.put('/quiz/:code/users', (req, res) => {
+  const code = req.params.code;
+  const users = req.body.users;
+  console.log(req.body)
+  Quiz.findOneAndUpdate({ quizCode: code }, { $push: {users: users }}).then(()=> {
+    res.json({ message: `quiz with id ${code} was updated with ${users}`});
+  });
+});
 
-//we need help with the logic of gathering the users and starting the quiz game with all the users that have typed the quiz code. Thats our big hurdle. Quiz.findbyQuizCode??
-//we need help with the quiz creation process. 
-  // 1. user creates quiz form ('quiz/create')
-  //   1a. user can edit the questions ('quiz/edit') BUT THATS ON THE FRONT END
-  // 2. quiz starts ('quiz/add')
-  // 3. quiz finishes ('quiz/complete')
-  //   so each step needs a router.post???
+module.exports = router;
