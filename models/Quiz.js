@@ -7,7 +7,10 @@ const quizSchema = new Schema (
     questions: Array,
     songs: Array,
     users: Array,
-    isFinished: false // Do we have to put this? To know if the user has created a quizz or not.
+    isFinished: {
+      type: Boolean,
+      default: false
+    } // Do we have to put this? To know if the user has created a quizz or not.
   },
   {
     timestaps: true
