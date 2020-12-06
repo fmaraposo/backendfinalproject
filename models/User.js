@@ -6,10 +6,14 @@ const userSchema = new Schema (
     username: String,
     password: String,
     spotifyId: String,
+    accessToken: String,
+    refreshToken: String,
+    expiresIn: String,
+    displayName: String,
     isAdmin: false // Do we have to put this? To know if the user has created a quizz or not.
   },
   {
-    timestaps: true
+    timestamps: true
   }
 )
 

@@ -53,23 +53,25 @@ passport.use(
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
       callbackURL: '/api/auth/spotify/callback'
     },
-    function(accessToken, refreshToken, expires_in, profile, done) {
+    function(accessToken, refreshToken, expiresIn, profile, done) {
       User.findOne({ spotifyId: profile.id })
       .then((user) => {
-        if (user) {
-          //Authenticate and persist in session
-          done(null, user);
-          return;
+        if (!user) {
+          return User.create({
+            spotifyId: profile.id,
+            accessToken,
+            refreshToken,
+            expiresIn,
+            displayName: profile.displayName
+          });
+        } else {
+          user.accessToken = accessToken;
+          user.refreshToken = refreshToken;
+          return user.save();
         }
-
-        User.create({ spotifyId: profile.id, username: profile.displayName })
-          .then((newUser) => {
-            //Authenticate and persist in session
-            done(null, newUser);
-          })
-          .catch((err) => done(err)); // closes User.create()
       })
-      .catch((err) => done(err)); // closes User.findOne()
+      .then(user => done(null, user))
+      .catch(err => done(err));// closes User.findOne()
     }
   )
 );

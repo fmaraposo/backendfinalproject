@@ -13,7 +13,7 @@ const quizSchema = new Schema (
     } // Do we have to put this? To know if the user has created a quizz or not.
   },
   {
-    timestaps: true
+    timestamps: true
   }
 )
 

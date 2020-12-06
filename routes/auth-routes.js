@@ -96,7 +96,7 @@ router.get('/loggedin', (req, res) => {
 router.get(
   '/auth/spotify',
   passport.authenticate('spotify', {
-    scope: ['user-read-email', 'user-read-private'],
+    scope: ['user-read-email', 'user-read-private', 'playlist-modify-public'],
     showDialog: true
   })
 );
