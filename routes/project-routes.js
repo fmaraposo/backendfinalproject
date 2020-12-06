@@ -7,12 +7,12 @@ const Quiz = require('../models/Quiz');
 //Route to create quiz
 
 router.post('/quiz', (req, res) => {
-  const questions = req.body.questions;
+  const myQuestions = req.body.questions;
   const quizCode = Math.floor(100000 + Math.random() * 900000);
 
   Quiz.create({
     quizCode: quizCode,
-    questions: questions,
+    questions: myQuestions,
   })
     .then((response) => {
       console.log(`This is the quiz we have just added: ${response}`);
@@ -23,20 +23,28 @@ router.post('/quiz', (req, res) => {
     });
 });
 
+//Get the quiz code and display on frontend
+router.get('/quiz/:code', (req, res) => {
+  const code = req.params.code;
+  Quiz.findOne({ quizCode: code }).then((quiz) => {
+    res.json(quiz.quizCode);
+  });
+});
+
+//Get the Quiz from its quiz code
 router.get('/quiz-code/:code', (req, res) => {
   const code = req.params.code;
   Quiz.find({ quizCode: code }).then((quiz) => {
     res.json(quiz);
-  })
-})
-
+  });
+});
 
 //Add array of songs to the Quiz Model
 router.put('/quiz/:id/edit', (req, res) => {
   const quizId = req.params.id;
   const songs = req.body.songs;
-  Quiz.findByIdAndUpdate(quizId, { $push: {songs: songs }}).then(()=> {
-    res.json({ message: `quiz with id ${quizId} was updated`});
+  Quiz.findByIdAndUpdate(quizId, { $push: { songs: songs } }).then(() => {
+    res.json({ message: `quiz with id ${quizId} was updated` });
   });
 });
 
@@ -44,10 +52,12 @@ router.put('/quiz/:id/edit', (req, res) => {
 router.put('/quiz/:code/users', (req, res) => {
   const code = req.params.code;
   const users = req.body.users;
-  console.log(req.body)
-  Quiz.findOneAndUpdate({ quizCode: code }, { $push: {users: users }}).then(()=> {
-    res.json({ message: `quiz with id ${code} was updated with ${users}`});
-  });
+  console.log(req.body);
+  Quiz.findOneAndUpdate({ quizCode: code }, { $push: { users: users } }).then(
+    () => {
+      res.json({ message: `quiz with id ${code} was updated with ${users}` });
+    }
+  );
 });
 
 module.exports = router;
