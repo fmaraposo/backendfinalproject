@@ -8,11 +8,15 @@ const Quiz = require('../models/Quiz');
 
 router.post('/quiz', (req, res) => {
   const myQuestions = req.body.questions;
+  const userName = req.body.user;
+  console.log('this is the request body', req.body)
   const quizCode = Math.floor(100000 + Math.random() * 900000);
 
   Quiz.create({
     quizCode: quizCode,
     questions: myQuestions,
+    users: userName
+
   })
     .then((response) => {
       console.log(`This is the quiz we have just added: ${response}`);
