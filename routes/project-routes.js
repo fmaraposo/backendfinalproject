@@ -68,8 +68,11 @@ router.put('/quiz/:code/users', (req, res) => {
   );
 });
 
-router.get('/quiz/:code/playlist', (req, res) => {
+router.post('/quiz/:code/playlist', (req, res) => {
   const code = req.params.code;
+  /* const access_token = req.body.userToken;
+  console.log(access_token); */
+  let playlist = [];
   Quiz.findOne({ quizCode: code }).then((quiz) => {
     const songs = quiz.songs;
     let getTrackPromises = [];
@@ -80,30 +83,42 @@ router.get('/quiz/:code/playlist', (req, res) => {
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
     });
 
-    spotifyAPI.clientCredentialsGrant()
-      .then((data) => {
-        spotifyAPI.setAccessToken(data.body["access_token"]);
+    spotifyAPI.setAccessToken(data.body['access_token']);
 
-        songs.forEach((song) => {
-          getTrackPromises.push(spotifyAPI.searchTracks(`track:${song}`));
-        });
-    
-        Promise.all(getTrackPromises).then((data) => {
-          let playlist = [];
-          playlist = data.map((response) => {
-            return { 
-              name:  response.body.tracks.items[0].name,
-              href:  response.body.tracks.items[0].href,
-              preview_url:  response.body.tracks.items[0].preview_url,
-              uri: response.body.tracks.items[0].uri
-            }
-          })
-          res.json(playlist);
-        });
+    songs.forEach((song) => {
+      getTrackPromises.push(spotifyAPI.searchTracks(`track:${song}`));
+    });
 
-      })
-  
+    Promise.all(getTrackPromises).then((data) => {
+      playlist = data.map((response) => {
+        return {
+          name: response.body.tracks.items[0].name,
+          href: response.body.tracks.items[0].href,
+          preview_url: response.body.tracks.items[0].preview_url,
+          uri: response.body.tracks.items[0].uri,
+        };
+      });
+
+      res.json(playlist);
+    });
   });
 });
+
+/*
+router.get('/quiz/:code/createplaylist', (req,res) => {
+  const code = req.params.code;
+  Quiz.findOne({quizCode:code})
+    .then((quiz) => {
+      const spotifyAPI = new SpotifyWebAPI({
+        clientId: process.env.SPOTIFY_CLIENT_ID,
+        clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+      });
+  
+      spotifyAPI.clientCredentialsGrant()
+        .then((data) => {
+          spotifyAPI.setAccessToken(data.body["access_token"]);
+  
+    })
+}) */
 
 module.exports = router;
