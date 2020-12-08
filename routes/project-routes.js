@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const { format } = require('morgan');
 const Quiz = require('../models/Quiz');
+const SpotifyWebAPI = require('spotify-web-api-node');
 
 //Route to create quiz
 
@@ -49,7 +50,7 @@ router.put('/quiz/:quizCode/addsongs', (req, res) => {
   Quiz.findOneAndUpdate(
     { quizCode: quizCode },
     { $push: { songs: songs } },
-    { isFinished: true},
+    { isFinished: true }
   ).then(() => {
     res.json({ message: `quiz with quizCode ${quizCode} was updated` });
   });
@@ -65,6 +66,44 @@ router.put('/quiz/:code/users', (req, res) => {
       res.json({ message: `quiz with id ${code} was updated with ${users}` });
     }
   );
+});
+
+router.get('/quiz/:code/playlist', (req, res) => {
+  const code = req.params.code;
+  Quiz.findOne({ quizCode: code }).then((quiz) => {
+    const songs = quiz.songs;
+    let getTrackPromises = [];
+    console.log('clientid', process.env.SPOTIFY_CLIENT_ID);
+    console.log('clientid', process.env.SPOTIFY_CLIENT_SECRET);
+    const spotifyAPI = new SpotifyWebAPI({
+      clientId: process.env.SPOTIFY_CLIENT_ID,
+      clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+    });
+
+    spotifyAPI.clientCredentialsGrant()
+      .then((data) => {
+        spotifyAPI.setAccessToken(data.body["access_token"]);
+
+        songs.forEach((song) => {
+          getTrackPromises.push(spotifyAPI.searchTracks(`track:${song}`));
+        });
+    
+        Promise.all(getTrackPromises).then((data) => {
+          let playlist = [];
+          playlist = data.map((response) => {
+            return { 
+              name:  response.body.tracks.items[0].name,
+              href:  response.body.tracks.items[0].href,
+              preview_url:  response.body.tracks.items[0].preview_url,
+              uri: response.body.tracks.items[0].uri
+            }
+          })
+          res.json(playlist);
+        });
+
+      })
+  
+  });
 });
 
 module.exports = router;
