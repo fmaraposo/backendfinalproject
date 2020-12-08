@@ -9,14 +9,13 @@ const Quiz = require('../models/Quiz');
 router.post('/quiz', (req, res) => {
   const myQuestions = req.body.questions;
   const userName = req.body.user;
-  console.log('this is the request body', req.body)
+  console.log('this is the request body', req.body);
   const quizCode = Math.floor(100000 + Math.random() * 900000);
 
   Quiz.create({
     quizCode: quizCode,
     questions: myQuestions,
-    users: userName
-
+    users: userName,
   })
     .then((response) => {
       console.log(`This is the quiz we have just added: ${response}`);
@@ -44,11 +43,15 @@ router.get('/quiz-code/:code', (req, res) => {
 });
 
 //Add array of songs to the Quiz Model
-router.put('/quiz/:id/edit', (req, res) => {
-  const quizId = req.params.id;
+router.put('/quiz/:quizCode/addsongs', (req, res) => {
+  const quizCode = req.params.quizCode;
   const songs = req.body.songs;
-  Quiz.findByIdAndUpdate(quizId, { $push: { songs: songs } }).then(() => {
-    res.json({ message: `quiz with id ${quizId} was updated` });
+  Quiz.findOneAndUpdate(
+    { quizCode: quizCode },
+    { $push: { songs: songs } },
+    { isFinished: true},
+  ).then(() => {
+    res.json({ message: `quiz with quizCode ${quizCode} was updated` });
   });
 });
 
