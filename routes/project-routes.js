@@ -70,20 +70,22 @@ router.put('/quiz/:code/users', (req, res) => {
 
 router.post('/quiz/:code/playlist', (req, res) => {
   const code = req.params.code;
-  /* const access_token = req.body.userToken;
-  console.log(access_token); */
+   const access_token = req.body.userToken;
+   let playlistURI;
+
   let playlist = [];
+  const spotifyAPI = new SpotifyWebAPI({
+    clientId: process.env.SPOTIFY_CLIENT_ID,
+    clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+  });
+
   Quiz.findOne({ quizCode: code }).then((quiz) => {
     const songs = quiz.songs;
     let getTrackPromises = [];
     console.log('clientid', process.env.SPOTIFY_CLIENT_ID);
     console.log('clientid', process.env.SPOTIFY_CLIENT_SECRET);
-    const spotifyAPI = new SpotifyWebAPI({
-      clientId: process.env.SPOTIFY_CLIENT_ID,
-      clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-    });
 
-    spotifyAPI.setAccessToken(data.body['access_token']);
+    spotifyAPI.setAccessToken(access_token);
 
     songs.forEach((song) => {
       getTrackPromises.push(spotifyAPI.searchTracks(`track:${song}`));
@@ -99,8 +101,25 @@ router.post('/quiz/:code/playlist', (req, res) => {
         };
       });
 
-      res.json(playlist);
-    });
+     // res.json(playlist);
+     return spotifyAPI.createPlaylist('My playlist', { 'description': 'My description', 'public': true })
+    })
+    .then(data =>
+      {
+        playlistURI = data.body.uri
+        let playlistID = data.body.id
+        playlistURIs = playlist.map(song => {
+          return song.uri
+        })
+       
+        return spotifyAPI.addTracksToPlaylist(playlistID, playlistURIs)
+      })
+      .then(data => {
+        res.json(playlistURI)
+      })
+      .catch(err => {
+        console.log('this is the error', err)
+      })
   });
 });
 
