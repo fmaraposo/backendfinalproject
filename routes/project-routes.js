@@ -10,6 +10,8 @@ const SpotifyWebAPI = require('spotify-web-api-node');
 router.post('/quiz', (req, res) => {
   const myQuestions = req.body.questions;
   const userName = req.body.user;
+  const playlistTitle = req.body.playlistTitle;
+  const playlistDescription = req.body.playlistDescription;
   console.log('this is the request body', req.body);
   const quizCode = Math.floor(100000 + Math.random() * 900000);
 
@@ -17,6 +19,8 @@ router.post('/quiz', (req, res) => {
     quizCode: quizCode,
     questions: myQuestions,
     users: userName,
+    title: playlistTitle,
+    description: playlistDescription,
   })
     .then((response) => {
       console.log(`This is the quiz we have just added: ${response}`);
@@ -70,8 +74,8 @@ router.put('/quiz/:code/users', (req, res) => {
 
 router.post('/quiz/:code/playlist', (req, res) => {
   const code = req.params.code;
-   const access_token = req.body.userToken;
-   let playlistURI;
+  const access_token = req.body.userToken;
+  let playlistURI;
 
   let playlist = [];
   const spotifyAPI = new SpotifyWebAPI({
@@ -81,6 +85,9 @@ router.post('/quiz/:code/playlist', (req, res) => {
 
   Quiz.findOne({ quizCode: code }).then((quiz) => {
     const songs = quiz.songs;
+    console.log(quiz);
+    const playlistTitle = quiz.title;
+    const playlistDescription = quiz.description;
     let getTrackPromises = [];
     console.log('clientid', process.env.SPOTIFY_CLIENT_ID);
     console.log('clientid', process.env.SPOTIFY_CLIENT_SECRET);
@@ -91,53 +98,41 @@ router.post('/quiz/:code/playlist', (req, res) => {
       getTrackPromises.push(spotifyAPI.searchTracks(`track:${song}`));
     });
 
-    Promise.all(getTrackPromises).then((data) => {
-      playlist = data.map((response) => {
-        return {
-          name: response.body.tracks.items[0].name,
-          href: response.body.tracks.items[0].href,
-          preview_url: response.body.tracks.items[0].preview_url,
-          uri: response.body.tracks.items[0].uri,
-        };
-      });
+    Promise.all(getTrackPromises)
+      .then((data) => {
+        playlist = data.map((response) => {
+          return {
+            name: response.body.tracks.items[0].name,
+            href: response.body.tracks.items[0].href,
+            preview_url: response.body.tracks.items[0].preview_url,
+            uri: response.body.tracks.items[0].uri,
+          };
+        });
 
-     // res.json(playlist);
-     return spotifyAPI.createPlaylist('My playlist', { 'description': 'My description', 'public': true })
-    })
-    .then(data =>
-      {
-        playlistURI = data.body.uri
-        let playlistID = data.body.id
-        playlistURIs = playlist.map(song => {
-          return song.uri
-        })
-       
-        return spotifyAPI.addTracksToPlaylist(playlistID, playlistURIs)
+        // res.json(playlist);
+        return spotifyAPI.createPlaylist(playlistTitle, {
+          description: playlistDescription,
+          public: true,
+        });
       })
-      .then(data => {
-        res.json(playlistURI)
+      .then((data) => {
+        playlistURI = data.body.uri;
+        let playlistID = data.body.id;
+        console.log('This is your quiz title:', playlistTitle);
+        console.log('this is your playlist ', data);
+        playlistURIs = playlist.map((song) => {
+          return song.uri;
+        });
+
+        return spotifyAPI.addTracksToPlaylist(playlistID, playlistURIs);
       })
-      .catch(err => {
-        console.log('this is the error', err)
+      .then((data) => {
+        res.json(playlistURI);
       })
+      .catch((err) => {
+        console.log('this is the error', err);
+      });
   });
 });
-
-/*
-router.get('/quiz/:code/createplaylist', (req,res) => {
-  const code = req.params.code;
-  Quiz.findOne({quizCode:code})
-    .then((quiz) => {
-      const spotifyAPI = new SpotifyWebAPI({
-        clientId: process.env.SPOTIFY_CLIENT_ID,
-        clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-      });
-  
-      spotifyAPI.clientCredentialsGrant()
-        .then((data) => {
-          spotifyAPI.setAccessToken(data.body["access_token"]);
-  
-    })
-}) */
 
 module.exports = router;
