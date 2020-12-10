@@ -12,7 +12,7 @@ const quizSchema = new Schema (
     isFinished: {
       type: Boolean,
       default: false
-    } // Do we have to put this? To know if the user has created a quizz or not.
+    } 
   },
   {
     timestamps: true
