@@ -95,9 +95,9 @@ router.post('/quiz/:code/playlist', (req, res) => {
     spotifyAPI.setAccessToken(access_token);
 
     songs.forEach((song) => {
+      if (song === '') { (song = "Never Gonna Give You Up")}
       getTrackPromises.push(spotifyAPI.searchTracks(`track:${song}`));
     });
-
     Promise.all(getTrackPromises)
       .then((data) => {
         playlist = data.map((response) => {
