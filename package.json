@@ -18,10 +18,10 @@
     "hbs": "^4.0.1",
     "mongoose": "^5.2.10",
     "morgan": "^1.9.0",
-    "node-sass-middleware": "^0.11.0",
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
     "passport-spotify": "^1.1.0",
+    "path": "^0.12.7",
     "serve-favicon": "^2.5.0",
     "spotify-web-api-node": "^5.0.0"
   },
