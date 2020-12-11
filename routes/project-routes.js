@@ -65,11 +65,22 @@ router.put('/quiz/:code/users', (req, res) => {
   const code = req.params.code;
   const users = req.body.users;
   console.log(req.body);
+ /* Quiz.find({quizCode: code}).then((response) => {
+    if(!response) {
+      console.log('no quiz found')
+      res.json({ error: `no quiz found` });
+    } else {
+      let quizId = response._id
+     return Quiz.findByIdAndUpdate(quizId, { $push: { users: users } }) 
+    }
+  }).then(() => {
+    res.json({ message: `quiz with id ${code} was updated with ${users}` });
+  }) */
   Quiz.findOneAndUpdate({ quizCode: code }, { $push: { users: users } }).then(
     () => {
       res.json({ message: `quiz with id ${code} was updated with ${users}` });
     }
-  );
+  ); 
 });
 
 router.post('/quiz/:code/playlist', (req, res) => {
